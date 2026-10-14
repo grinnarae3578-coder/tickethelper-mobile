@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#18243a"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="티켓도우미">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<title>티켓도우미</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;color:#192437;background:#f4f6fa}
+*{box-sizing:border-box}body{margin:0}header{background:#18243a;color:white;padding:30px 20px 22px}header h1{margin:0 0 7px;font-size:25px}header p{margin:0;color:#cad3e4;font-size:13px}
+main{max-width:650px;margin:auto;padding:16px}section{background:white;border:1px solid #e1e5ec;border-radius:17px;padding:17px;margin-bottom:15px}
+h2{font-size:17px;margin:0 0 15px}label{display:block;font-size:13px;font-weight:600;margin:12px 0 5px}
+input,select,textarea{width:100%;font:inherit;font-size:16px;border:1px solid #c9d0db;border-radius:9px;padding:11px;background:#fff;color:#1a273a}
+textarea{min-height:65px}button,.link{display:inline-block;border:0;border-radius:10px;background:#1d3d74;color:white;padding:11px 14px;font:inherit;font-size:14px;font-weight:650;text-decoration:none;cursor:pointer}
+button.secondary,.link.secondary{background:#edf1f7;color:#183353}button.danger{background:#fff0f0;color:#a52121}
+.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.item{padding:14px 0;border-top:1px solid #e6e9ef}.item:first-of-type{border-top:0}
+.meta,.muted{font-size:13px;color:#647184;line-height:1.5}.item strong{font-size:17px}.pill{display:inline-block;background:#eaf0ff;border-radius:30px;padding:3px 9px;font-size:12px;margin-bottom:6px}
+small{color:#667388}.notice{font-size:13px;line-height:1.6;background:#fff8e7;border-radius:10px;padding:12px} .empty{padding:20px 0;color:#647184}
+</style></head><body>
+<header><h1>🎟 티켓 예매 도우미</h1><p>아이폰 홈 화면용 · 공연 일정 · 선호 좌석 · 캘린더 알림</p></header>
+<main>
+<section><h2>예매 일정 등록 / 수정</h2>
+<form id="ticketForm">
+<input type="hidden" id="editId">
+<label for="title">공연·경기명 *</label><input id="title" required placeholder="예: 조성진 피아노 리사이틀">
+<label for="venue">예매처</label><select id="venue"><option>NOL 티켓</option><option>예술의전당</option><option>YES24 티켓</option><option>티켓링크</option><option>구단 자체 예매</option><option>기타</option></select>
+<label for="datetime">예매 시작 시각 (한국 시간 기준) *</label><input id="datetime" type="datetime-local" required>
+<label for="url">공식 예매 페이지 URL</label><input id="url" type="url" placeholder="https://...">
+<label for="qty">예매 인원</label><select id="qty"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select>
+<label for="seats">선호 좌석 및 대안</label><textarea id="seats" placeholder="예: 1순위 중앙 R석 / 2순위 1층 측면"></textarea>
+<label for="notes">회원 선예매·할인·매수 제한 메모</label><textarea id="notes" placeholder="예: 골드회원 선예매 여부 확인"></textarea>
+<div class="actions"><button type="submit">일정 저장</button><button type="button" class="secondary" id="reset">입력 초기화</button></div>
+</form></section>
+<section><h2>등록된 예매 일정 <span id="total" class="muted"></span></h2><div id="list"></div></section>
+<section><h2>광주 경기 실전 준비</h2>
+<p class="muted">2026년 10월 15일 14:00 (한국시간) · 목표 2매 · 3루 KIA 홈 응원석 우선 · 통로석 우선 · 다른 좌석도 허용</p>
+<div id="countdown" style="font-size:25px;font-weight:700;margin:12px 0" aria-live="polite">시간 계산 중</div>
+<div class="actions"><button id="presetGwangju">광주 경기 일정 등록</button><a class="link secondary" href="https://tickets.interpark.com/" target="_blank" rel="noopener noreferrer">NOL 티켓 열기 ↗</a></div>
+<p class="muted">정확한 경기별 예매 URL은 등록 화면에서 직접 입력하세요. 사이트의 대기열과 인증은 직접 진행해야 합니다.</p>
+</section>
+<section><h2>좌석 자동 탐색 연습 (모의 환경)</h2>
+<p class="muted">아래 좌석은 실제 예매처의 좌석이 아닌 연습용 가상 좌석입니다. 통로 인접 연석 2매를 우선 찾고, 없으면 분리 좌석을 찾습니다.</p>
+<div class="actions"><button id="generateSeats" class="secondary">모의 좌석 새로 만들기</button><button id="findSeats">모의 좌석 자동 탐색·선택</button></div>
+<div id="seatGrid" style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;margin-top:15px"></div>
+<div id="seatResult" class="muted" aria-live="polite"></div>
+</section>
+<section><h2>알림 및 설치 안내</h2>
+<div class="notice"><b>중요:</b> 아이폰에서 앱을 닫아도 알림을 받으려면 각 일정의 <b>캘린더 알림 추가</b>를 눌러 생성된 .ics 파일을 iPhone 캘린더에 등록하세요. 알림은 30분·10분·1분 전에 설정됩니다. 이 앱 자체는 백그라운드 푸시를 발송하지 않습니다.</div>
+<p class="muted">Safari에서 HTTPS로 게시된 이 웹앱을 연 다음 공유 → 홈 화면에 추가 → 웹 앱으로 열기를 선택하세요. ZIP 파일 자체를 열어서는 홈 화면 웹앱이 설치되지 않습니다.</p>
+<p class="muted">데이터는 현재 기기의 브라우저 저장소에만 저장됩니다. Safari 데이터 삭제·앱 재설치 시 사라질 수 있습니다. 다른 기기와 자동 동기화되지 않습니다.</p>
+<div class="actions"><button id="export" class="secondary">일정 백업(JSON)</button><button id="importBtn" class="secondary">백업 불러오기</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
+</section><p class="muted">실제 예매는 공식 사이트에서 직접 진행합니다. 자동 좌석 선점·보안 인증 우회·자동 결제 기능은 포함하지 않습니다.</p>
+</main>
+<script src="app.js"></script></body></html>
